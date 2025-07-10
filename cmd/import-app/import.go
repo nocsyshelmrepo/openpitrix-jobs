@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -65,6 +65,10 @@ func newImportCmd() *cobra.Command {
 			if err != nil {
 				klog.Fatalf("read dir failed, error: %s", err)
 				os.Exit(0)
+			}
+
+			for category := range wf.importConfig.CategoryIcon {
+				wf.CreateCategory(context.TODO(), category)
 			}
 
 			for _, fileInfo := range fileList {
@@ -465,28 +469,19 @@ func (ic *ImportConfig) GetIcon(ctg string) string {
 		return ""
 	}
 
-	// viper is case-insensitive
-	return ic.CategoryIcon[strings.ToLower(ctg)]
+	return ic.CategoryIcon[ctg]
 }
 
 func tryLoadImportConfig() (*ImportConfig, error) {
-	viper.SetConfigName("import-config")
-	viper.AddConfigPath(defaultConfigurationPath)
-
-	// Load from current working directory, only used for debugging
-	viper.AddConfigPath(".")
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			return nil, err
-		} else {
-			return nil, fmt.Errorf("error parsing configuration file %s", err)
-		}
+	configPath := path.Join(defaultConfigurationPath, "import-config.yaml")
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read configuration file: %s", err)
 	}
 
 	conf := &ImportConfig{}
 
-	if err := viper.Unmarshal(conf); err != nil {
+	if err := yaml.Unmarshal(data, conf); err != nil {
 		return nil, err
 	}
 

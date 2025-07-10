@@ -5,9 +5,12 @@ categoryIcon:
   "Networking": "router"
   "Storage": "storage"
   "Image Registry": "cdn"
-  "Big Data": "increase"
   "Message Queueing": "blockchain"
   "Web Server": "ip"
+  "SDN": "router"
+  "AI": "role"
+  "Editor": "coding"
+  "Scheduler": "column"
 appNameReplace:
   "elasticsearch-exporter": "Elasticsearch Exporter"
   "harbor": "Harbor"
